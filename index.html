@@ -80,29 +80,6 @@
             stroke-width: 4;
             fill: none;
         }
-        .drive-selector {
-            margin: 20px 0;
-            text-align: left;
-        }
-        .drive-option {
-            padding: 10px;
-            margin: 5px 0;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .drive-option:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        .drive-option.selected {
-            background: rgba(0, 210, 255, 0.3);
-            border-left: 3px solid #00d2ff;
-        }
-        .drive-info {
-            font-size: 12px;
-            opacity: 0.8;
-        }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes draw { 100% { stroke-dashoffset: 0; } }
         .error { color: #ff6b6b; margin-top: 10px; }
@@ -111,14 +88,10 @@
 <body>
     <div class="container">
         <h1>Установка Undertale</h1>
-        <div id="drive-selector" class="drive-selector">
-            <p>Выберите диск для установки:</p>
-            <!-- Drive options will be inserted here by JavaScript -->
-        </div>
         <div class="progress-container">
             <div class="progress-bar" id="progress"></div>
         </div>
-        <div class="status" id="status">Выберите диск и нажмите "Установить"</div>
+        <div class="status" id="status">Нажмите "Установить" чтобы начать</div>
         <div class="spinner" id="spinner"></div>
         <svg class="checkmark" id="checkmark" viewBox="0 0 52 52">
             <circle cx="26" cy="26" r="25" />
@@ -135,71 +108,18 @@
         const spinner = document.getElementById('spinner');
         const checkmark = document.getElementById('checkmark');
         const error = document.getElementById('error');
-        const driveSelector = document.getElementById('drive-selector');
-        let selectedDrive = null;
-        
-        // Load available drives
-        async function loadDrives() {
-            try {
-                const drives = await pywebview.api.get_drives();
-                if (drives.length === 0) {
-                    driveSelector.innerHTML = '<p class="error">Не найдено подходящих дисков для установки</p>';
-                    btn.disabled = true;
-                    return;
-                }
-                
-                drives.forEach(drive => {
-                    const driveElement = document.createElement('div');
-                    driveElement.className = 'drive-option';
-                    driveElement.innerHTML = `
-                        <strong>${drive.letter}</strong>
-                        <div class="drive-info">${drive.free} / ${drive.total}</div>
-                    `;
-                    driveElement.addEventListener('click', () => {
-                        document.querySelectorAll('.drive-option').forEach(el => {
-                            el.classList.remove('selected');
-                        });
-                        driveElement.classList.add('selected');
-                        selectedDrive = drive.letter;
-                        btn.disabled = false;
-                    });
-                    driveSelector.appendChild(driveElement);
-                });
-                
-                // Select first drive by default
-                if (drives.length > 0) {
-                    document.querySelector('.drive-option').click();
-                }
-            } catch (e) {
-                driveSelector.innerHTML = `<p class="error">Ошибка при получении списка дисков: ${e}</p>`;
-                btn.disabled = true;
-            }
-        }
         
         btn.addEventListener('click', async () => {
-            if (!selectedDrive) {
-                error.textContent = "Пожалуйста, выберите диск для установки";
-                return;
-            }
-            
             btn.style.display = 'none';
             spinner.style.display = 'block';
-            status.textContent = "Подготовка к установке...";
+            status.textContent = "Начало установки...";
             error.textContent = '';
             
             try {
-                const success = await pywebview.api.install(selectedDrive);
-                if (success) {
-                    spinner.style.display = 'none';
-                    checkmark.style.display = 'block';
-                    status.textContent = "Установка завершена успешно!";
-                } else {
-                    spinner.style.display = 'none';
-                    progress.style.background = '#ff6b6b';
-                    status.textContent = "Ошибка установки";
-                    btn.style.display = 'block';
-                    btn.textContent = "Попробовать снова";
-                }
+                await pywebview.api.install();
+                spinner.style.display = 'none';
+                checkmark.style.display = 'block';
+                status.textContent = "Установка завершена успешно!";
             } catch (e) {
                 spinner.style.display = 'none';
                 progress.style.background = '#ff6b6b';
@@ -218,9 +138,6 @@
         }
         
         window.updateProgress = updateProgress;
-        
-        // Initialize when page loads
-        window.addEventListener('DOMContentLoaded', loadDrives);
     </script>
 </body>
 </html>
