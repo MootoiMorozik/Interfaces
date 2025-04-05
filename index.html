@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { 
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            width: 500px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        h1 { 
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .progress-container {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 20px 0;
+            border-radius: 3px;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+        .status {
+            margin: 15px 0;
+            min-height: 50px;
+        }
+        button {
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+            transition: transform 0.2s;
+        }
+        button:hover { transform: translateY(-2px); }
+        button:active { transform: translateY(1px); }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #00d2ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+            display: none;
+        }
+        .checkmark {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto;
+            display: none;
+        }
+        .checkmark path {
+            stroke-dasharray: 99;
+            stroke-dashoffset: 99;
+            animation: draw 0.9s ease-in-out forwards;
+            stroke: #4CAF50;
+            stroke-width: 4;
+            fill: none;
+        }
+        .drive-selector {
+            margin: 20px 0;
+            text-align: left;
+        }
+        .drive-option {
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .drive-option:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .drive-option.selected {
+            background: rgba(0, 210, 255, 0.3);
+            border-left: 3px solid #00d2ff;
+        }
+        .drive-info {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes draw { 100% { stroke-dashoffset: 0; } }
+        .error { color: #ff6b6b; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Установка Undertale</h1>
+        <div id="drive-selector" class="drive-selector">
+            <p>Выберите диск для установки:</p>
+            <!-- Drive options will be inserted here by JavaScript -->
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+        <div class="status" id="status">Выберите диск и нажмите "Установить"</div>
+        <div class="spinner" id="spinner"></div>
+        <svg class="checkmark" id="checkmark" viewBox="0 0 52 52">
+            <circle cx="26" cy="26" r="25" />
+            <path d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+        </svg>
+        <button id="install-btn">Установить</button>
+        <div class="error" id="error"></div>
+    </div>
+
+    <script>
+        const btn = document.getElementById('install-btn');
+        const status = document.getElementById('status');
+        const progress = document.getElementById('progress');
+        const spinner = document.getElementById('spinner');
+        const checkmark = document.getElementById('checkmark');
+        const error = document.getElementById('error');
+        const driveSelector = document.getElementById('drive-selector');
+        let selectedDrive = null;
+        
+        // Load available drives
+        async function loadDrives() {
+            try {
+                const drives = await pywebview.api.get_drives();
+                if (drives.length === 0) {
+                    driveSelector.innerHTML = '<p class="error">Не найдено подходящих дисков для установки</p>';
+                    btn.disabled = true;
+                    return;
+                }
+                
+                drives.forEach(drive => {
+                    const driveElement = document.createElement('div');
+                    driveElement.className = 'drive-option';
+                    driveElement.innerHTML = `
+                        <strong>${drive.letter}</strong>
+                        <div class="drive-info">${drive.free} / ${drive.total}</div>
+                    `;
+                    driveElement.addEventListener('click', () => {
+                        document.querySelectorAll('.drive-option').forEach(el => {
+                            el.classList.remove('selected');
+                        });
+                        driveElement.classList.add('selected');
+                        selectedDrive = drive.letter;
+                        btn.disabled = false;
+                    });
+                    driveSelector.appendChild(driveElement);
+                });
+                
+                // Select first drive by default
+                if (drives.length > 0) {
+                    document.querySelector('.drive-option').click();
+                }
+            } catch (e) {
+                driveSelector.innerHTML = `<p class="error">Ошибка при получении списка дисков: ${e}</p>`;
+                btn.disabled = true;
+            }
+        }
+        
+        btn.addEventListener('click', async () => {
+            if (!selectedDrive) {
+                error.textContent = "Пожалуйста, выберите диск для установки";
+                return;
+            }
+            
+            btn.style.display = 'none';
+            spinner.style.display = 'block';
+            status.textContent = "Подготовка к установке...";
+            error.textContent = '';
+            
+            try {
+                const success = await pywebview.api.install(selectedDrive);
+                if (success) {
+                    spinner.style.display = 'none';
+                    checkmark.style.display = 'block';
+                    status.textContent = "Установка завершена успешно!";
+                } else {
+                    spinner.style.display = 'none';
+                    progress.style.background = '#ff6b6b';
+                    status.textContent = "Ошибка установки";
+                    btn.style.display = 'block';
+                    btn.textContent = "Попробовать снова";
+                }
+            } catch (e) {
+                spinner.style.display = 'none';
+                progress.style.background = '#ff6b6b';
+                status.textContent = "Ошибка установки, проверьте соединение.";
+                error.textContent = e;
+                btn.style.display = 'block';
+                btn.textContent = "Попробовать снова";
+            }
+        });
+        
+        function updateProgress(percent, message) {
+            progress.style.width = percent + '%';
+            if (message) {
+                status.textContent = message;
+            }
+        }
+        
+        window.updateProgress = updateProgress;
+        
+        // Initialize when page loads
+        window.addEventListener('DOMContentLoaded', loadDrives);
+    </script>
+</body>
+</html>
