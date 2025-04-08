@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Glass UI</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #0f0f0f, #1c1c1c);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      color: white;
+      position: relative;
+    }
+
+    .glass-container {
+      padding: 20px 30px;
+      border-radius: 25px;
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+      animation: fadeIn 1s ease forwards;
+      transform: translateY(20px);
+    }
+
+    .glass-button {
+      margin: 10px;
+      padding: 12px 28px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .glass-button:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .glass-button.red {
+      background: rgba(255, 60, 60, 0.3);
+      border-color: rgba(255, 60, 60, 0.4);
+      animation: pulse 1s ease;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.07); }
+      100% { transform: scale(1); }
+    }
+
+    .flag {
+      width: 24px;
+      height: 16px;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    .language-switcher {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .glass-window {
+      position: absolute;
+      top: 150px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 320px;
+      min-width: 200px;
+      min-height: 150px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      z-index: 1000;
+      resize: both;
+      overflow: auto;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .glass-window.closing {
+      opacity: 0;
+      transform: translate(-50%, -20px) scale(0.95);
+    }
+
+    .close-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .drag-header {
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+      margin-bottom: 10px;
+    }
+
+    #github-btn {
+      position: absolute;
+      bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      font-size: 15px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      text-decoration: none;
+      color: white;
+      transition: all 0.3s ease;
+    }
+
+    #github-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    #github-logo {
+      width: 20px;
+      height: 20px;
+      filter: invert(1);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glass-container">
+    <h1 id="title">GlassUI</h1>
+    <p id="description">Окно можно перетаскивать и изменять его размер</p>
+    
+    <div class="language-switcher">
+      <button id="langBtn" class="glass-button">
+        <img id="flag" class="flag" src="https://flagcdn.com/w40/ru.png" alt="RU"> Русский
+      </button>
+      <button id="createBtn" class="glass-button">Создать окно</button>
+    </div>
+  </div>
+
+  <a id="github-btn" href="https://github.com/mootoimorozik" target="_blank">
+    <img id="github-logo" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" alt="GitHub Logo">
+    GitHub
+  </a>
+
+  <script>
+    let windowOpen = false;
+    let currentLang = 'ru';
+
+    const langs = {
+      ru: {
+        title: "GlassUI",
+        description: "Окно можно перетаскивать и изменять его размер",
+        button: "Создать окно",
+        windowTitle: "GlassUI",
+        windowText: "Это окно можно перетаскивать и изменять его размер.",
+        flag: "https://flagcdn.com/w40/ru.png",
+        label: "Русский"
+      },
+      en: {
+        title: "GlassUI",
+        description: "You can drag and resize this window",
+        button: "Create Window",
+        windowTitle: "GlassUI",
+        windowText: "You can drag and resize this window.",
+        flag: "https://flagcdn.com/w40/us.png",
+        label: "English"
+      }
+    };
+
+    const title = document.getElementById("title");
+    const desc = document.getElementById("description");
+    const createBtn = document.getElementById("createBtn");
+    const langBtn = document.getElementById("langBtn");
+    const flag = document.getElementById("flag");
+
+    langBtn.addEventListener("click", () => {
+      currentLang = currentLang === "ru" ? "en" : "ru";
+      const lang = langs[currentLang];
+      title.textContent = lang.title;
+      desc.textContent = lang.description;
+      createBtn.textContent = lang.button;
+      flag.src = lang.flag;
+      langBtn.innerHTML = `<img class="flag" src="${lang.flag}" alt="${currentLang.toUpperCase()}"> ${lang.label}`;
+    });
+
+    createBtn.addEventListener("click", () => {
+      if (windowOpen) {
+        createBtn.classList.add("red");
+        setTimeout(() => createBtn.classList.remove("red"), 500);
+        return;
+      }
+
+      const lang = langs[currentLang];
+
+      const win = document.createElement("div");
+      win.className = "glass-window";
+      win.innerHTML = `
+        <div class="drag-header">
+          <h2>${lang.windowTitle}</h2>
+          <button class="close-btn">×</button>
+        </div>
+        <p>${lang.windowText}</p>
+      `;
+      document.body.appendChild(win);
+      windowOpen = true;
+
+      const closeBtn = win.querySelector(".close-btn");
+      closeBtn.addEventListener("click", () => {
+        win.classList.add("closing");
+        setTimeout(() => {
+          win.remove();
+          windowOpen = false;
+        }, 300);
+      });
+
+      const header = win.querySelector(".drag-header");
+      let offsetX = 0, offsetY = 0, isDragging = false;
+
+      const startDrag = (e) => {
+        isDragging = true;
+        offsetX = (e.touches ? e.touches[0].clientX : e.clientX) - win.offsetLeft;
+        offsetY = (e.touches ? e.touches[0].clientY : e.clientY) - win.offsetTop;
+        header.style.cursor = "grabbing";
+      };
+
+      const onDrag = (e) => {
+        if (!isDragging) return;
+        const x = (e.touches ? e.touches[0].clientX : e.clientX) - offsetX;
+        const y = (e.touches ? e.touches[0].clientY : e.clientY) - offsetY;
+        win.style.left = `${x}px`;
+        win.style.top = `${y}px`;
+      };
+
+      const stopDrag = () => {
+        isDragging = false;
+        header.style.cursor = "grab";
+      };
+
+      header.addEventListener("mousedown", startDrag);
+      header.addEventListener("touchstart", startDrag);
+      window.addEventListener("mousemove", onDrag);
+      window.addEventListener("touchmove", onDrag);
+      window.addEventListener("mouseup", stopDrag);
+      window.addEventListener("touchend", stopDrag);
+    });
+  </script>
+</body>
+</html>
