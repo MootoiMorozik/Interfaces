@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Locked</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: white;
+      color: black;
+      text-align: center;
+      height: 100vh;
+      display: flex;
+      user-select: none;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      overflow: hidden;
+      cursor: none;
+    }
+
+    .date {
+      font-size: 30px;
+      margin-top: 28px;
+      font-weight: bold;
+      color: #333;
+      line-height: 1;
+    }
+
+    .time {
+      font-size: 80px;
+      margin-top: 0;
+      color: #555;
+      font-weight: bold;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 35px;
+      margin-top: 20px;
+    }
+
+    h2.description {
+      margin: 0;
+      color: #555;
+      font-size: 20px;
+      margin-top: 20px;
+    }
+
+    button {
+      margin-top: 20px;
+      background-color: rgba(100, 100, 100, 0.6);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 16px;
+      border-radius: 14px;
+      cursor: none;
+      position: relative;
+      z-index: 1;
+      transition: transform 0.1s ease, background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: rgba(80, 80, 80, 0.7);
+      transform: scale(1.03);
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    #custom-cursor {
+      position: fixed;
+      width: 12px;
+      height: 12px;
+      background: white;
+      border: 2px solid black;
+      border-radius: 50%;
+      z-index: 9999;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+    }
+
+    .window {
+      position: fixed;
+      width: 400px;
+      top: 150px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      border: 2px solid #ccc;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      border-radius: 10px;
+      z-index: 10;
+      display: none;
+      cursor: none;
+    }
+
+    .title-bar {
+      background: #f0f0f0;
+      padding: 10px;
+      font-weight: bold;
+      cursor: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: none;
+      color: #000;
+      font-weight: bold;
+      padding: 0 5px;
+    }
+
+    .close-btn:hover {
+      color: red;
+    }
+
+    .window-content {
+      padding: 20px;
+      font-size: 16px;
+      text-align: left;
+    }
+
+    .search-bar {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    .loading {
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #555;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 30px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div id="custom-cursor"></div>
+
+  <div class="date" id="date"></div>
+  <div class="time" id="time"></div>
+  <h1>Устройство заблокировано</h1>
+  <button onclick="showWindow()">Unblock device</button>
+
+  <div class="window" id="popup-window">
+    <div class="title-bar" id="drag-zone">
+      Server
+      <button class="close-btn" onclick="closeWindow()">✖</button>
+    </div>
+    <div class="window-content" id="window-content">
+      <div class="loading" id="loading-spinner"></div>
+      <div class="error-content" style="display: none;">
+        <p style="font-size: 22px; font-weight: bold; color: red;">Bad Gateway</p>
+        <p style="color: #a00;">Ошибка соединения, проверьте подключение.</p>
+        <input class="search-bar" value="unblockjk.net/KdlDKF9m32ogxn7Fnda983/" readonly />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const cursor = document.getElementById("custom-cursor");
+    document.addEventListener("mousemove", e => {
+      cursor.style.left = e.clientX + "px";
+      cursor.style.top = e.clientY + "px";
+    });
+
+    function updateDateTime() {
+      const now = new Date();
+      const options = { weekday: 'long', month: 'long', day: 'numeric' };
+      const date = now.toLocaleDateString('ru-RU', options);
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('date').innerText =
+        date.charAt(0).toUpperCase() + date.slice(1);
+      document.getElementById('time').innerText = hours + ':' + minutes;
+    }
+
+    setInterval(updateDateTime, 1000 / 5);
+    window.onload = updateDateTime;
+
+    function showWindow() {
+      const windowEl = document.getElementById("popup-window");
+      const spinner = document.getElementById("loading-spinner");
+      const errorContent = document.querySelector(".error-content");
+
+      windowEl.style.display = "block";
+      spinner.style.display = "block";
+      errorContent.style.display = "none";
+
+      setTimeout(() => {
+        spinner.style.display = "none";
+        errorContent.style.display = "block";
+      }, 2000);
+    }
+
+    function closeWindow() {
+      document.getElementById("popup-window").style.display = "none";
+    }
+
+    // Drag functionality
+    const windowEl = document.getElementById("popup-window");
+    const dragZone = document.getElementById("drag-zone");
+    let isDragging = false, offsetX = 0, offsetY = 0;
+
+    dragZone.addEventListener("mousedown", (e) => {
+      isDragging = true;
+      offsetX = e.clientX - windowEl.offsetLeft;
+      offsetY = e.clientY - windowEl.offsetTop;
+    });
+
+    document.addEventListener("mouseup", () => {
+      isDragging = false;
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (isDragging) {
+        windowEl.style.left = e.clientX - offsetX + "px";
+        windowEl.style.top = e.clientY - offsetY + "px";
+      }
+    });
+  </script>
+</body>
+</html>
