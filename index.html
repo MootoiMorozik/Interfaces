@@ -9,6 +9,7 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      cursor: none !important;
     }
 
     body {
@@ -23,7 +24,6 @@
       justify-content: flex-start;
       align-items: center;
       overflow: hidden;
-      cursor: none;
     }
 
     .date {
@@ -62,7 +62,6 @@
       padding: 15px 30px;
       font-size: 16px;
       border-radius: 14px;
-      cursor: none;
       position: relative;
       z-index: 1;
       transition: transform 0.1s ease, background-color 0.2s;
@@ -101,14 +100,12 @@
       border-radius: 10px;
       z-index: 10;
       display: none;
-      cursor: none;
     }
 
     .title-bar {
       background: #f0f0f0;
       padding: 10px;
       font-weight: bold;
-      cursor: none;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -121,7 +118,6 @@
       background: none;
       border: none;
       font-size: 18px;
-      cursor: none;
       color: #000;
       font-weight: bold;
       padding: 0 5px;
@@ -226,6 +222,7 @@
       document.getElementById("popup-window").style.display = "none";
     }
 
+    // Drag functionality
     const windowEl = document.getElementById("popup-window");
     const dragZone = document.getElementById("drag-zone");
     let isDragging = false, offsetX = 0, offsetY = 0;
