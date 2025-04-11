@@ -5,6 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Locked</title>
   <style>
+    :root {
+      --bg-color: white;
+      --text-color: black;
+      --secondary-color: #555;
+      --border-color: #ccc;
+      --window-bg: white;
+    }
+
+    body.dark {
+      --bg-color: #121212;
+      --text-color: white;
+      --secondary-color: #aaa;
+      --border-color: #333;
+      --window-bg: #1e1e1e;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -14,8 +30,8 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: white;
-      color: black;
+      background-color: var(--bg-color);
+      color: var(--text-color);
       text-align: center;
       height: 100vh;
       display: flex;
@@ -24,33 +40,26 @@
       justify-content: flex-start;
       align-items: center;
       overflow: hidden;
+      transition: background-color 0.4s, color 0.4s;
     }
 
     .date {
       font-size: 30px;
       margin-top: 28px;
       font-weight: bold;
-      color: #333;
-      line-height: 1;
+      color: var(--text-color);
     }
 
     .time {
       font-size: 80px;
       margin-top: 0;
-      color: #555;
+      color: var(--secondary-color);
       font-weight: bold;
     }
 
     h1 {
       margin: 0;
       font-size: 35px;
-      margin-top: 20px;
-    }
-
-    h2.description {
-      margin: 0;
-      color: #555;
-      font-size: 20px;
       margin-top: 20px;
     }
 
@@ -62,7 +71,6 @@
       padding: 15px 30px;
       font-size: 16px;
       border-radius: 14px;
-      position: relative;
       z-index: 1;
       transition: transform 0.1s ease, background-color 0.2s;
     }
@@ -94,16 +102,16 @@
       top: 150px;
       left: 50%;
       transform: translateX(-50%);
-      background: white;
-      border: 2px solid #ccc;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      background: var(--window-bg);
+      border: 2px solid var(--border-color);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
       border-radius: 10px;
       z-index: 10;
       display: none;
     }
 
     .title-bar {
-      background: #f0f0f0;
+      background: var(--border-color);
       padding: 10px;
       font-weight: bold;
       display: flex;
@@ -118,7 +126,7 @@
       background: none;
       border: none;
       font-size: 18px;
-      color: #000;
+      color: var(--text-color);
       font-weight: bold;
       padding: 0 5px;
     }
@@ -138,9 +146,8 @@
       padding: 10px;
       font-size: 14px;
       margin-top: 10px;
-      border: 1px solid #ccc;
+      border: 1px solid var(--border-color);
       border-radius: 6px;
-      box-sizing: border-box;
     }
 
     .loading {
@@ -156,6 +163,20 @@
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
+    }
+
+    .email-link {
+      position: fixed;
+      bottom: 10px;
+      left: 20px;
+      font-size: 14px;
+      color: #8b5cf6;
+      text-decoration: none;
+      transition: opacity 0.3s;
+    }
+
+    .email-link:hover {
+      opacity: 0.7;
     }
   </style>
 </head>
@@ -181,6 +202,8 @@
       </div>
     </div>
   </div>
+
+  <a class="email-link" href="https://proton.me" target="_blank">braverysupport@proton.me</a>
 
   <script>
     const cursor = document.getElementById("custom-cursor");
@@ -222,7 +245,6 @@
       document.getElementById("popup-window").style.display = "none";
     }
 
-    // Drag functionality
     const windowEl = document.getElementById("popup-window");
     const dragZone = document.getElementById("drag-zone");
     let isDragging = false, offsetX = 0, offsetY = 0;
