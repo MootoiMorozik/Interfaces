@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Minecraft Launcher</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #111;
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 200px;
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 10px;
+      z-index: 10;
+      border-right: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 40px;
+      color: #fff;
+    }
+
+    .sidebar button {
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      background: transparent;
+      border: none;
+      color: #aaa;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 8px;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .sidebar button:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+    }
+
+    .container {
+      position: absolute;
+      left: 200px;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      transition: opacity 0.4s ease;
+    }
+
+    .fade {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    h1 {
+      font-size: 36px;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .version-list {
+      width: 400px;
+      max-height: 400px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .version {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 12px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .version:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .panel {
+      margin-top: 20px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 20px;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.4s ease;
+    }
+
+    .button {
+      margin: 10px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      background: #333;
+      cursor: pointer;
+      transition: background 0.3s;
+      border: none;
+    }
+
+    .button:hover {
+      background: #444;
+    }
+
+    .progress {
+      width: 300px;
+      height: 16px;
+      background: #222;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 15px;
+    }
+
+    .bar {
+      height: 100%;
+      width: 0%;
+      background: #6a8dff;
+      transition: width 0.2s ease;
+    }
+
+    .text {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <!-- Левая панель -->
+  <div class="sidebar">
+    <div class="logo">Onix Launcher</div>
+    <button onclick="back()">Главная</button>
+    <button onclick="alert('О проекте')">О проекте</button>
+  </div>
+
+  <!-- Экран выбора версии -->
+  <div id="main" class="container">
+    <h1>Выберите версию</h1>
+    <div class="version-list" id="versionList"></div>
+  </div>
+
+  <!-- Экран установки -->
+  <div id="install" class="container fade">
+    <h1 id="title">Установка</h1>
+    <div class="panel">
+      <button class="button" onclick="startInstall()">Установить</button>
+      <button class="button" onclick="back()">Назад</button>
+      <div class="progress"><div class="bar" id="bar"></div></div>
+      <div class="text" id="status">Ожидание...</div>
+    </div>
+  </div>
+
+  <script>
+    const versions = [];
+
+    function setVersions(data) {
+      versions.length = 0;
+      versions.push(...data);
+      const list = document.getElementById("versionList");
+      list.innerHTML = '';
+      data.forEach(v => {
+        const el = document.createElement("div");
+        el.className = "version";
+        el.innerText = v.name;
+        el.onclick = () => select(v);
+        list.appendChild(el);
+      });
+    }
+
+    let selected = null;
+
+    function select(v) {
+      selected = v;
+      document.getElementById("title").innerText = "Установка: " + v.name;
+      document.getElementById("main").classList.add("fade");
+      document.getElementById("install").classList.remove("fade");
+    }
+
+    function back() {
+      document.getElementById("install").classList.add("fade");
+      document.getElementById("main").classList.remove("fade");
+    }
+
+    function startInstall() {
+      const bar = document.getElementById("bar");
+      const status = document.getElementById("status");
+      bar.style.width = "0%";
+      status.innerText = "Загрузка...";
+      if (window.pywebview) {
+        pywebview.api.download_appx(selected).then(() => {
+          status.innerText = "Готово!";
+        });
+      }
+    }
+  </script>
+</body>
+</html>
